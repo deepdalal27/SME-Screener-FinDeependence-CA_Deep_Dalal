@@ -1,0 +1,4 @@
+__pycache__/
+*.pyc
+data/.checkpoint.json
+data/last_failed_run.json
