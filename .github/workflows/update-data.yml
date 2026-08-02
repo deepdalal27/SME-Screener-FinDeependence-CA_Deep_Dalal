@@ -1,0 +1,65 @@
+name: Update SME screener data
+
+on:
+  schedule:
+    # 14:45 UTC = 20:15 IST, Mon-Fri (after market close and EOD updates)
+    - cron: "45 14 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "What to run"
+        type: choice
+        default: daily
+        options: [daily, full, doctor]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: data-update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install yfinance requests pandas openpyxl
+
+      - name: Run formula tests (nothing ships if these fail)
+        run: python pipeline/test_pipeline.py
+
+      - name: Run app logic tests
+        run: node pipeline/test_app.js
+
+      - name: Check which data sources are reachable
+        continue-on-error: true
+        run: python pipeline/build_data.py --doctor
+
+      - name: Build dataset
+        if: ${{ inputs.mode != 'doctor' }}
+        run: |
+          if [ "${{ inputs.mode }}" = "full" ]; then
+            python pipeline/build_data.py --full
+          else
+            python pipeline/build_data.py
+          fi
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "sme-data-bot"
+          git config user.email "actions@github.com"
+          git add data/
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git commit -m "data: auto-update $(date -u +'%Y-%m-%d %H:%M UTC')"
+            git push
+          fi
