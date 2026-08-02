@@ -33,9 +33,28 @@ IST = timezone(timedelta(hours=5, minutes=30))
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
 
-# Your Cloudflare Worker (already live for the IPO Tracker) can relay requests
-# that a datacentre IP would otherwise get blocked on.
+# NSE and BSE block datacentre IPs on their per-company APIs, so a cloud runner
+# gets nothing from them directly. These relays fetch from their own IPs and
+# hand back the response. Tried in order, only after a direct attempt fails.
 WORKER_BRIDGE = "https://fd-license.deepuploads27.workers.dev/data?u="
+RELAYS = [
+    ("worker", lambda u: WORKER_BRIDGE + requests.utils.quote(u, safe="")),
+    ("allorigins", lambda u: "https://api.allorigins.win/raw?url=" +
+                             requests.utils.quote(u, safe="")),
+    ("codetabs", lambda u: "https://api.codetabs.com/v1/proxy?quest=" +
+                           requests.utils.quote(u, safe="")),
+    ("thingproxy", lambda u: "https://thingproxy.freeboard.io/fetch/" + u),
+]
+
+# Relays are slow. Once one has failed this many times in a row without a
+# single success, stop trying it for the rest of the run — otherwise a build
+# over 1,000 companies spends hours waiting on a relay that is simply down.
+RELAY_FAIL_LIMIT = 12
+_relay_state = {}          # name -> {"fails": int, "wins": int, "off": bool}
+
+
+def relay_stats():
+    return {k: dict(v) for k, v in _relay_state.items()}
 
 SRC_XBRL = "XBRL filing"        # the company's own tagged submission - primary
 SRC_IMPORT = "Screener/your export"
@@ -85,15 +104,28 @@ def get(url, session=None, timeout=25, retries=1, via_bridge_on_fail=True, refer
             last = repr(e)
         if attempt < retries:
             time.sleep(1.5 * (attempt + 1))
-    if via_bridge_on_fail and WORKER_BRIDGE:
-        try:
-            r = requests.get(WORKER_BRIDGE + requests.utils.quote(url, safe=""),
-                             headers={"User-Agent": UA}, timeout=timeout + 10)
-            if r.status_code == 200 and r.content:
-                return r
-            last = f"bridge HTTP {r.status_code}"
-        except Exception as e:
-            last = f"bridge {e!r}"
+    if via_bridge_on_fail:
+        for name, build in RELAYS:
+            st = _relay_state.setdefault(name, {"fails": 0, "wins": 0, "off": False})
+            if st["off"]:
+                continue
+            try:
+                r = requests.get(build(url), headers={"User-Agent": UA},
+                                 timeout=timeout + 10)
+                if r.status_code == 200 and r.content and len(r.content) > 10:
+                    body = r.content[:200].lstrip().lower()
+                    # relays return their own error pages with HTTP 200
+                    if not body.startswith(b"<!doctype html") or b"<html" not in body:
+                        st["wins"] += 1
+                        st["fails"] = 0
+                        return r
+                last = f"{name} HTTP {r.status_code}"
+            except Exception as e:
+                last = f"{name} {e!r}"
+            st["fails"] += 1
+            if st["wins"] == 0 and st["fails"] >= RELAY_FAIL_LIMIT:
+                st["off"] = True
+                note_error(f"relay:{name}", f"disabled after {st['fails']} failures")
     note_error(url[:90], last)
     return None
 
@@ -1059,6 +1091,27 @@ def probe_all(sample_nse=None, sample_bse=None, verbose=True):
                              '</period></context>'
                              '<ProfitLossForPeriod contextRef="C">1</ProfitLossForPeriod>'
                              '</xbrl>')[0])
+    # Which relay, if any, can reach a blocked NSE endpoint from here?
+    if nse_syms:
+        test_url = ("https://www.nseindia.com/api/quote-equity?symbol="
+                    + requests.utils.quote(nse_syms[0]))
+        for name, build in RELAYS:
+            def _try(nm=name, bd=build):
+                try:
+                    r = requests.get(bd(test_url), headers={"User-Agent": UA}, timeout=30)
+                    if r.status_code == 200 and r.content and len(r.content) > 200:
+                        j = None
+                        try:
+                            j = r.json()
+                        except Exception:
+                            return {}
+                        if isinstance(j, dict) and (j.get("priceInfo") or j.get("info")):
+                            return {"relay works": nm}
+                    return {}
+                except Exception:
+                    return {}
+            probe(f"NSE via relay: {name}", _try)
+
     probe("Moneycontrol pricefeed", lambda: mc_snapshot("Reliance Industries")[0])
     probe("Chittorgarh IPO feed", lambda: ipo_history(years_back=1))
     probe("Yahoo statements", lambda: yahoo_financials("RELIANCE.NS")[0])
