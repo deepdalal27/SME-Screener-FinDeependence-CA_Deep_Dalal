@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+<meta name="theme-color" content="#1f2430">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="description" content="FinDeependence SME Screener — screen every NSE Emerge & BSE SME company on 40+ fundamental parameters.">
+<title>FinDeependence — SME Screener</title>
+<link rel="apple-touch-icon" href="logo.png">
+<link rel="icon" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --green:#1fa463; --green-d:#178050; --ink:#1f2430; --ink2:#3a4152;
+  --grey:#6b7280; --line:#e6e9ee; --bg:#f6f8fa; --card:#fff;
+  --amber:#f59e0b; --red:#dc2626; --blue:#0e7490; --violet:#6d28d9;
+  --pos:#0f8a4d; --neg:#c62828;
+  --sh:0 1px 3px rgba(20,30,50,.07),0 6px 18px rgba(20,30,50,.05);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);
+  -webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
+a{color:var(--blue)}
+button,input,select,textarea{font-family:inherit}
+.r{text-align:right}.c{text-align:center}
+.small{font-size:.74rem;color:var(--grey);line-height:1.5}
+.pos{color:var(--pos)}.neg{color:var(--neg)}
+
+/* ---------- header ---------- */
+header{background:linear-gradient(135deg,#1f2430,#2c3444);color:#fff;padding:10px 14px;
+  position:sticky;top:0;z-index:60;box-shadow:0 2px 10px rgba(0,0,0,.15)}
+.hrow{display:flex;align-items:center;gap:10px;max-width:1600px;margin:0 auto}
+.hlogo{width:34px;height:34px;border-radius:9px;background:#fff;object-fit:contain;flex:0 0 auto}
+.htxt{flex:1;min-width:0}
+.htxt h1{margin:0;font-size:1rem;font-weight:900;letter-spacing:-.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.htxt .sub{font-size:.68rem;color:#a9b4c6;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbtn{background:rgba(255,255,255,.12);color:#fff;border:none;border-radius:9px;padding:8px 11px;
+  font-size:.76rem;font-weight:700;cursor:pointer;white-space:nowrap}
+.hbtn:hover{background:rgba(255,255,255,.22)}
+.hbtn.pri{background:var(--green)}
+#lic-stamp{font-size:.64rem;color:#8ee7b4;font-weight:700;white-space:nowrap}
+.dstamp{font-size:.62rem;color:#8b96a8}
+
+/* ---------- toolbar ---------- */
+.wrap{max-width:1600px;margin:0 auto;padding:12px 14px 60px}
+.bar{background:var(--card);border-radius:14px;box-shadow:var(--sh);padding:10px;margin-bottom:10px}
+.bar-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.srch{flex:1 1 200px;min-width:150px;position:relative}
+.srch input{width:100%;padding:9px 11px 9px 32px;border:1px solid var(--line);border-radius:10px;font-size:.86rem}
+.srch svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);opacity:.4}
+.seg{display:inline-flex;background:#eef1f5;border-radius:10px;padding:3px;gap:2px}
+.seg button{border:none;background:transparent;border-radius:8px;padding:7px 11px;font-size:.75rem;
+  font-weight:700;color:var(--grey);cursor:pointer;white-space:nowrap}
+.seg button.active{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.tbtn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 11px;font-size:.76rem;
+  font-weight:700;color:var(--ink2);cursor:pointer;white-space:nowrap;display:inline-flex;gap:6px;align-items:center}
+.tbtn:hover{border-color:#c9d2dd;background:#fafbfc}
+.tbtn.on{background:#e9f7f0;border-color:#a8dcc3;color:var(--green-d)}
+.badge{background:var(--green);color:#fff;border-radius:20px;padding:1px 7px;font-size:.66rem;font-weight:800}
+.count{font-size:.78rem;color:var(--grey);font-weight:600;margin-left:auto;white-space:nowrap}
+.count b{color:var(--ink);font-size:.92rem}
+
+/* ---------- panels ---------- */
+.panel{border-top:1px dashed var(--line);margin-top:10px;padding-top:10px;display:none}
+.panel.show{display:block}
+.plab{font-size:.66rem;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--grey);margin:0 0 6px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:#fff;border-radius:20px;padding:5px 11px;font-size:.74rem;
+  font-weight:600;cursor:pointer;color:var(--ink2)}
+.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.chip.ex.on{background:var(--blue);border-color:var(--blue)}
+
+/* filter rows */
+.frow{display:grid;grid-template-columns:1fr 90px 1fr 1fr 34px;gap:6px;align-items:center;margin-bottom:6px}
+.frow select,.frow input{width:100%;padding:8px;border:1px solid var(--line);border-radius:9px;font-size:.8rem;min-width:0}
+.frow .del{border:none;background:#fef2f2;color:#b91c1c;border-radius:9px;padding:8px 0;cursor:pointer;font-weight:800}
+.funit{font-size:.66rem;color:var(--grey);white-space:nowrap;padding-left:2px}
+@media(max-width:640px){.frow{grid-template-columns:1fr 1fr;grid-auto-rows:auto}
+  .frow select:first-child{grid-column:1/-1}.frow .del{grid-column:1/-1}}
+.addf{border:1px dashed #b9c4d1;background:#fbfcfd;color:var(--ink2);border-radius:10px;padding:8px 12px;
+  font-size:.76rem;font-weight:700;cursor:pointer;margin-top:2px}
+
+/* column picker */
+.cols{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:4px 10px;max-height:230px;overflow:auto}
+.cols label{display:flex;gap:6px;align-items:center;font-size:.76rem;color:var(--ink2);cursor:pointer;padding:2px}
+
+/* ---------- table ---------- */
+.tblwrap{background:var(--card);border-radius:14px;box-shadow:var(--sh);overflow:auto;-webkit-overflow-scrolling:touch;
+  max-height:calc(100vh - 230px)}
+table.sc{border-collapse:separate;border-spacing:0;width:100%;font-size:.8rem;white-space:nowrap}
+table.sc th{position:sticky;top:0;background:#f2f5f8;z-index:3;font-size:.66rem;font-weight:800;text-transform:uppercase;
+  letter-spacing:.4px;color:var(--ink2);padding:9px 8px;border-bottom:1px solid var(--line);cursor:pointer;user-select:none}
+table.sc th:hover{background:#e9eef4}
+table.sc th.sorted{color:var(--green-d);background:#e9f7f0}
+table.sc td{padding:8px;border-bottom:1px solid #f0f2f5;color:var(--ink2)}
+table.sc tbody tr:hover td{background:#f8fbff}
+table.sc .cn{position:sticky;left:0;background:#fff;z-index:2;min-width:170px;max-width:230px;white-space:normal;
+  border-right:1px solid var(--line)}
+table.sc th.cn{z-index:5;background:#f2f5f8}
+table.sc tbody tr:hover .cn{background:#f8fbff}
+.nm{font-weight:700;color:var(--ink);cursor:pointer;line-height:1.25}
+.nm:hover{color:var(--green-d);text-decoration:underline}
+.tick{font-size:.64rem;color:var(--grey);font-weight:600}
+.exb{display:inline-block;font-size:.56rem;font-weight:800;padding:1px 5px;border-radius:4px;vertical-align:1px;margin-left:4px}
+.exb.n{background:#e0f2fe;color:#075985}.exb.b{background:#ede9fe;color:#5b21b6}
+.na{color:#c3c9d2}
+.qb{display:inline-block;width:14px;height:14px;line-height:14px;text-align:center;border-radius:4px;
+  font-size:.6rem;font-weight:900;margin-left:4px;vertical-align:1px}
+.q-exchange{background:#dcfce7;color:#166534}
+.q-thirdparty{background:#fef3c7;color:#92400e}
+.q-price-only{background:#eef1f5;color:#6b7280}
+.q-disputed{background:#fef3c7;color:#92400e}
+.pend{display:inline-block;font-size:.55rem;font-weight:700;color:#92400e;background:#fef3c7;
+  border-radius:4px;padding:1px 4px;margin-left:4px;vertical-align:1px}
+.chip.q.on{background:var(--violet);border-color:var(--violet)}
+.livedot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);
+  margin-left:5px;vertical-align:1px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;vertical-align:1px}
+.dot.on{background:#4ade80;animation:pulse 2s infinite}
+.dot.off{background:#8b96a8}
+.srcrow{display:flex;justify-content:space-between;gap:10px;font-size:.72rem;padding:4px 0;
+  border-bottom:1px solid #f0f2f5}
+.srcrow span:last-child{color:var(--grey);font-weight:600;white-space:nowrap}
+.empty{padding:44px 20px;text-align:center;color:var(--grey)}
+.spin{width:26px;height:26px;border:3px solid #e3e8ee;border-top-color:var(--green);border-radius:50%;
+  animation:sp .8s linear infinite;margin:30px auto}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ---------- detail modal ---------- */
+.dov{position:fixed;inset:0;background:rgba(15,20,30,.55);backdrop-filter:blur(2px);z-index:90;
+  display:none;align-items:flex-end;justify-content:center}
+.dov.show{display:flex}
+.dp{background:var(--bg);width:100%;max-width:900px;max-height:94vh;overflow:auto;border-radius:18px 18px 0 0;padding:16px}
+@media(min-width:700px){.dov{align-items:center}.dp{border-radius:18px;max-height:90vh}}
+.dhead{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px}
+.dhead h2{margin:0;font-size:1.05rem;font-weight:900;line-height:1.25}
+.xbtn{border:none;background:#e8ecf1;border-radius:50%;width:30px;height:30px;font-size:1rem;cursor:pointer;flex:0 0 auto}
+.sect{background:var(--card);border-radius:13px;box-shadow:var(--sh);padding:12px;margin-bottom:10px}
+.sect h3{margin:0 0 9px;font-size:.78rem;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:var(--ink2)}
+.facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px}
+.fact{background:#f7f9fb;border-radius:10px;padding:8px 9px}
+.fact .k{font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--grey)}
+.fact .v{font-size:.92rem;font-weight:800;margin-top:2px}
+.lk{display:flex;flex-wrap:wrap;gap:6px}
+.lk a{background:#eef2f7;color:var(--ink2);text-decoration:none;border-radius:9px;padding:7px 11px;
+  font-size:.74rem;font-weight:700}
+.lk a:hover{background:#e2e8f0}
+.warnbox{background:#fffbeb;border:1px solid #fde68a;color:#92400e;border-radius:10px;padding:9px 12px;
+  font-size:.74rem;line-height:1.5;margin-bottom:10px}
+.errbox{background:#fef2f2;border:1px solid #fecaca;color:#991b1b;border-radius:10px;padding:9px 12px;
+  font-size:.74rem;line-height:1.5;margin-bottom:10px}
+
+/* ---------- lock ---------- */
+.pwov{position:fixed;inset:0;background:linear-gradient(150deg,#1f2430,#111722);z-index:200;
+  display:none;align-items:center;justify-content:center;padding:18px}
+.pwov.show{display:flex}
+.pw{background:#fff;border-radius:20px;padding:26px 22px;max-width:400px;width:100%;text-align:center}
+.pw img{width:64px;height:64px;border-radius:14px;object-fit:contain;margin-bottom:8px}
+.pw h2{margin:0 0 4px;font-size:1.05rem;font-weight:900}
+.pw p{margin:0 0 14px;font-size:.78rem;color:var(--grey);line-height:1.55}
+.pw .price{background:#e9f7f0;color:var(--green-d);border-radius:10px;padding:8px;font-size:.8rem;
+  font-weight:800;margin-bottom:14px}
+.pw input{width:100%;padding:11px;border:1px solid #dde2e8;border-radius:11px;font-size:1rem;text-align:center;
+  letter-spacing:1px;font-weight:700;text-transform:uppercase}
+.pw button{width:100%;margin-top:9px;padding:12px;border:none;border-radius:11px;background:var(--green);
+  color:#fff;font-weight:800;font-size:.95rem;cursor:pointer}
+.pwmsg{font-size:.76rem;margin-top:9px;min-height:16px;line-height:1.45}
+.pwmsg.err{color:var(--red)}.pwmsg.ok{color:var(--green-d)}
+.pwc{display:flex;gap:8px;margin-top:14px}
+.pwc a{flex:1;text-decoration:none;background:#f2f5f8;color:var(--ink2);border-radius:11px;padding:10px;
+  font-size:.74rem;font-weight:800}
+footer{text-align:center;padding:18px 14px 30px;font-size:.68rem;color:#9aa3af;line-height:1.6}
+</style>
+</head>
+<body>
+
+<header>
+ <div class="hrow">
+  <img class="hlogo" src="logo.png" alt="" onerror="this.style.display='none'">
+  <div class="htxt">
+    <h1>SME Screener <span style="font-weight:600;opacity:.6">· FinDeependence</span></h1>
+    <div class="sub"><span id="dstamp" class="dstamp">loading…</span> · <span id="lic-stamp"></span></div>
+    <div class="sub" id="livestamp"></div>
+  </div>
+  <button class="hbtn" id="reloadBtn" title="Reload data">↻</button>
+ </div>
+</header>
+
+<div class="wrap">
+
+  <div id="databox"></div>
+
+  <div class="bar">
+    <div class="bar-row">
+      <div class="srch">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+          <circle cx="11" cy="11" r="7"/><path d="M20 20l-4.5-4.5"/></svg>
+        <input id="q" placeholder="Search company or symbol…" autocomplete="off">
+      </div>
+      <div class="seg" id="exseg">
+        <button data-ex="all" class="active">All SME</button>
+        <button data-ex="NSE-EMERGE">NSE Emerge</button>
+        <button data-ex="BSE-SME">BSE SME</button>
+      </div>
+      <button class="tbtn" id="fBtn">⚙ Filters <span class="badge" id="fCount" style="display:none">0</span></button>
+      <button class="tbtn" id="sBtn">🔖 Screens</button>
+      <button class="tbtn" id="cBtn">▦ Columns</button>
+      <button class="tbtn" id="xBtn">⬇ CSV</button>
+      <div class="count"><b id="nShown">—</b> of <span id="nTotal">—</span> companies</div>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="panel" id="fPanel">
+      <p class="plab">Data source — how each company's fundamentals were sourced</p>
+      <div class="chips" id="qChips"></div>
+      <p class="plab" style="margin-top:12px">Sector</p>
+      <div class="chips" id="secChips"></div>
+      <p class="plab" style="margin-top:12px">Numeric criteria — add as many as you like</p>
+      <div id="fRows"></div>
+      <button class="addf" id="addF">+ Add criterion</button>
+      <button class="addf" id="clrF" style="border-style:solid;border-color:#f3c9c9;color:#b91c1c">Clear all</button>
+      <div class="small" style="margin-top:8px">Blank value = ignored. Money figures in ₹ Cr, ratios as plain numbers, percentages as numbers (e.g. OPM ≥ 15).</div>
+    </div>
+
+    <!-- SAVED SCREENS -->
+    <div class="panel" id="sPanel">
+      <p class="plab">Save current filters as a screen</p>
+      <div class="bar-row">
+        <input id="sName" placeholder="e.g. Quality SME compounders" style="flex:1 1 200px;padding:9px;border:1px solid var(--line);border-radius:10px;font-size:.82rem">
+        <button class="tbtn" id="sSave">💾 Save</button>
+      </div>
+      <p class="plab" style="margin-top:12px">Your screens</p>
+      <div class="chips" id="sList"></div>
+      <p class="plab" style="margin-top:12px">Ready-made screens</p>
+      <div class="chips" id="pList"></div>
+    </div>
+
+    <!-- COLUMNS -->
+    <div class="panel" id="cPanel">
+      <p class="plab">Visible columns</p>
+      <div class="cols" id="colList"></div>
+      <div class="bar-row" style="margin-top:8px">
+        <button class="tbtn" data-preset="core">Core set</button>
+        <button class="tbtn" data-preset="pl">P&amp;L deep-dive</button>
+        <button class="tbtn" data-preset="cash">Cash &amp; quality</button>
+        <button class="tbtn" data-preset="listing">Listing &amp; performance</button>
+        <button class="tbtn" data-preset="all">Everything</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="tblwrap" id="tblwrap"><div class="spin"></div></div>
+
+  <footer>
+    Built by <b>CA Deep Dalal</b> · Freedom with Finance · SME data as filed with NSE/BSE.<br>
+    Educational use only — not investment advice. Verify against the company's filings before acting.
+  </footer>
+</div>
+
+<div class="dov" id="dov"><div class="dp" id="dp"></div></div>
+
+<!-- ================= LOCK SCREEN ================= -->
+<div class="pwov" id="pwov">
+  <div class="pw">
+    <img src="logo.png" alt="" onerror="this.style.display='none'">
+    <h2>🔒 Members Only</h2>
+    <p>The FinDeependence SME Screener is a paid tool for members. Enter your access code to continue.</p>
+    <div class="price">₹500 / 6 months</div>
+    <input id="pw-code" placeholder="FD-XXXXXX-XXXX" autocomplete="off" spellcheck="false">
+    <button id="pw-go">Unlock</button>
+    <div class="pwmsg" id="pw-msg"></div>
+    <div class="pwc">
+      <a href="mailto:deepuploads27@gmail.com?subject=FinDeependence%20SME%20Screener%20Subscription&body=Hi%20Deep%2C%20I%20am%20interested%20in%20subscribing%20to%20the%20SME%20Screener.%20Please%20share%20the%20details.">✉ Email me</a>
+      <a href="https://instagram.com/findeependence" target="_blank" rel="noopener">📸 Instagram</a>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   FinDeependence SME Screener
+   Data: data/sme_data.json built daily by pipeline/build_data.py
+   ===================================================================== */
+
+/* ---------------------------------------------------------------------
+   METRIC REGISTRY  ————  ADD NEW CRITERIA HERE
+   Each entry: {k:key in company.m, label, unit, dec, grp, hi:'good when high'}
+   To add a NEW derived metric with no pipeline change, give it a calc():
+     {k:'ev_ebitda', label:'EV/EBITDA', calc:c=>..., dec:1, grp:'Valuation'}
+   Everything else (filters, columns, sorting, CSV, detail view) picks it
+   up automatically.
+--------------------------------------------------------------------- */
+const M=[
+ // Size & price
+ {k:'mcap',   label:'Market Cap',   unit:'₹Cr', dec:1, grp:'Size',      hi:1},
+ {k:'price',  label:'Price',        unit:'₹',   dec:2, grp:'Size'},
+ // P&L
+ {k:'revenue',label:'Revenue',      unit:'₹Cr', dec:1, grp:'P&L',       hi:1},
+ {k:'op',     label:'Operating Profit',unit:'₹Cr',dec:1,grp:'P&L',      hi:1},
+ {k:'opm',    label:'OPM',          unit:'%',   dec:1, grp:'P&L',       hi:1},
+ {k:'ebitda', label:'EBITDA',       unit:'₹Cr', dec:1, grp:'P&L',       hi:1},
+ {k:'ebitda_pct',label:'EBITDA %',  unit:'%',   dec:1, grp:'P&L',       hi:1},
+ {k:'dep',    label:'Depreciation', unit:'₹Cr', dec:1, grp:'P&L'},
+ {k:'ebit',   label:'EBIT',         unit:'₹Cr', dec:1, grp:'P&L',       hi:1},
+ {k:'ebit_pct',label:'EBIT %',      unit:'%',   dec:1, grp:'P&L',       hi:1},
+ {k:'interest',label:'Interest',    unit:'₹Cr', dec:1, grp:'P&L'},
+ {k:'tax',    label:'Tax',          unit:'₹Cr', dec:1, grp:'P&L'},
+ {k:'pat',    label:'PAT',          unit:'₹Cr', dec:1, grp:'P&L',       hi:1},
+ {k:'pat_pct',label:'PAT %',        unit:'%',   dec:1, grp:'P&L',       hi:1},
+ {k:'eps',    label:'EPS',          unit:'₹',   dec:2, grp:'P&L',       hi:1},
+ // Valuation
+ {k:'pe',     label:'P/E',          unit:'x',   dec:1, grp:'Valuation'},
+ {k:'pb',     label:'P/B',          unit:'x',   dec:2, grp:'Valuation'},
+ {k:'bvps',   label:'Book Value/sh',unit:'₹',   dec:1, grp:'Valuation', hi:1},
+ {k:'div_yield',label:'Dividend Yield',unit:'%',dec:2, grp:'Valuation', hi:1},
+ // Cash flow & quality
+ {k:'cfo',    label:'CFO',          unit:'₹Cr', dec:1, grp:'Cash',      hi:1},
+ {k:'capex',  label:'Capex',        unit:'₹Cr', dec:1, grp:'Cash'},
+ {k:'fcf',    label:'Free Cash Flow',unit:'₹Cr',dec:1, grp:'Cash',      hi:1},
+ {k:'cfo_pat',label:'CFO/PAT',      unit:'x',   dec:2, grp:'Cash',      hi:1},
+ {k:'fcf_pat',label:'FCF/PAT',      unit:'x',   dec:2, grp:'Cash',      hi:1},
+ // Returns & leverage
+ {k:'roe',    label:'ROE',          unit:'%',   dec:1, grp:'Returns',   hi:1},
+ {k:'roce',   label:'ROCE',         unit:'%',   dec:1, grp:'Returns',   hi:1},
+ {k:'de',     label:'Debt/Equity',  unit:'x',   dec:2, grp:'Returns'},
+ {k:'int_cov',label:'Interest Cover',unit:'x',  dec:1, grp:'Returns',   hi:1},
+ // Growth
+ {k:'sales_g1',label:'Sales Gr YoY',unit:'%',   dec:1, grp:'Growth',    hi:1},
+ {k:'pat_g1', label:'PAT Gr YoY',   unit:'%',   dec:1, grp:'Growth',    hi:1},
+ {k:'sales_g3',label:'Sales CAGR 3y',unit:'%',  dec:1, grp:'Growth',    hi:1},
+ {k:'pat_g3', label:'PAT CAGR 3y',  unit:'%',   dec:1, grp:'Growth',    hi:1},
+ // Shareholding & price data
+ {k:'promoter',label:'Promoter/Insider',unit:'%',dec:2,grp:'Holding',   hi:1},
+ {k:'hi52',   label:'52w High',     unit:'₹',   dec:2, grp:'Price'},
+ {k:'lo52',   label:'52w Low',      unit:'₹',   dec:2, grp:'Price'},
+ {k:'ret_1m', label:'Return 1M',    unit:'%',   dec:1, grp:'Price',     hi:1},
+ {k:'ret_3m', label:'Return 3M',    unit:'%',   dec:1, grp:'Price',     hi:1},
+ {k:'ret_1y', label:'Return 1Y',    unit:'%',   dec:1, grp:'Price',     hi:1},
+ // Listing & since-listing performance
+ {k:'listing_date',label:'Listing Date',type:'date',   grp:'Listing'},
+ {k:'age_yrs',label:'Age since listing',unit:'yrs',dec:2,grp:'Listing'},
+ {k:'issue_price',label:'IPO Issue Price',unit:'₹',dec:2,grp:'Listing'},
+ {k:'list_open',label:'Listing Day Open',unit:'₹',dec:2,grp:'Listing'},
+ {k:'list_close',label:'Listing Day Close',unit:'₹',dec:2,grp:'Listing'},
+ {k:'list_pop',label:'Listing Gain',    unit:'%', dec:1, grp:'Listing', hi:1},
+ {k:'ret_issue',label:'Return vs Issue Price',unit:'%',dec:1,grp:'Listing',hi:1},
+ {k:'ret_listclose',label:'Return since Listing',unit:'%',dec:1,grp:'Listing',hi:1},
+ {k:'cagr_issue',label:'CAGR since IPO',unit:'%',dec:1, grp:'Listing', hi:1},
+ {k:'cagr_listclose',label:'CAGR since Listing',unit:'%',dec:1,grp:'Listing',hi:1},
+ {k:'ath',    label:'All-Time High',  unit:'₹',   dec:2, grp:'Listing'},
+ {k:'off_ath',label:'Off All-Time High',unit:'%', dec:1, grp:'Listing'},
+ {k:'bench_ret',label:'Benchmark same period',unit:'%',dec:1,grp:'Listing'},
+ {k:'alpha',  label:'Alpha vs Benchmark',unit:'%',dec:1, grp:'Listing', hi:1},
+ // Derived in-app (no pipeline change needed) — pattern for future additions
+ {k:'off_high',label:'Off 52w High',unit:'%',   dec:1, grp:'Price',
+   calc:c=>{const p=g(c,'price'),h=g(c,'hi52');return (p==null||!h)?null:(p/h-1)*100;}},
+ {k:'up_low', label:'Up from 52w Low',unit:'%', dec:1, grp:'Price', hi:1,
+   calc:c=>{const p=g(c,'price'),l=g(c,'lo52');return (p==null||!l)?null:(p/l-1)*100;}},
+ {k:'ev',     label:'Earnings Yield',unit:'%',  dec:2, grp:'Valuation', hi:1,
+   calc:c=>{const pe=g(c,'pe');return (pe==null||pe<=0)?null:100/pe;}},
+ {k:'live_chg',label:'Live Change',  unit:'%',  dec:2, grp:'Price', hi:1,
+   calc:c=>{const l=LIVE[c.symbol],p=g(c,'price');return (l==null||p==null||!p)?null:(l/p-1)*100;}},
+];
+const MBY={}; M.forEach(m=>MBY[m.k]=m);
+const GROUPS=[...new Set(M.map(m=>m.grp))];
+
+/* live prices fetched during market hours: {symbol: price} */
+const LIVE={};
+
+/* value getter — handles calc() metrics and date metrics */
+function g(c,k){
+  if(!c) return null;
+  const m=MBY[k];
+  if(m&&m.calc){ return safe(m.calc(c)); }            // not cached: live data changes
+  if(m&&m.type==='date'){
+    const v=(c[k]!=null?c[k]:(c.m?c.m[k]:null));
+    return v?String(v).slice(0,10):null;
+  }
+  const v=c.m?c.m[k]:null;
+  return (v===undefined)?null:v;
+}
+function safe(v){return (typeof v==='number'&&isFinite(v))?v:null;}
+/* the price to display: live tick if we have one, else the official close */
+function shownPrice(c){
+  const l=LIVE[c.symbol];
+  return (l!=null)?l:g(c,'price');
+}
+
+/* ---------------- state ---------------- */
+const state={
+  q:'', ex:'all', sectors:new Set(), quals:new Set(), filters:[],
+  sort:{k:'mcap',dir:-1},
+  cols:['mcap','price','pe','revenue','opm','pat','pat_pct','eps','roce','de','cfo_pat','ret_1y'],
+};
+let DATA={companies:[],generated:null};
+
+/* ---------- auto-refresh configuration ---------- */
+const DATA_POLL_MS = 5*60*1000;    // re-check the data file every 5 min
+const LIVE_MS      = 2*60*1000;    // live quotes every 2 min while markets are open
+const LIVE_CAP     = 40;           // only the rows you're actually looking at
+const BRIDGE       = 'https://fd-license.deepuploads27.workers.dev/data?u=';
+const PROXIES=[
+  u=>BRIDGE+encodeURIComponent(u),
+  u=>'https://api.allorigins.win/raw?url='+encodeURIComponent(u),
+  u=>'https://api.codetabs.com/v1/proxy?quest='+encodeURIComponent(u),
+];
+
+/* IST clock — works the same whichever timezone the user's device is in.
+   We shift the absolute instant by +5:30 and then read UTC components, so the
+   device's own offset never enters the calculation. */
+const IST_SHIFT=5.5*3600*1000;
+function istParts(d){
+  const t=new Date((d?d.getTime():Date.now())+IST_SHIFT);
+  return {day:t.getUTCDay(), mins:t.getUTCHours()*60+t.getUTCMinutes(), t};
+}
+function istNow(){ return istParts().t; }     // read with getUTC* accessors
+function marketOpen(d){
+  const {day,mins}=istParts(d);
+  if(day===0||day===6) return false;          // 0 Sun … 6 Sat
+  return mins>=555 && mins<=930;              // 09:15 – 15:30 IST
+}
+
+const PRESETS={
+  core:['mcap','price','pe','revenue','opm','pat','pat_pct','eps','roce','de','cfo_pat','ret_1y'],
+  pl:['mcap','revenue','op','opm','ebitda','ebitda_pct','dep','ebit','ebit_pct','interest','tax','pat','pat_pct','eps'],
+  cash:['mcap','pat','cfo','cfo_pat','capex','fcf','fcf_pat','roce','roe','de','int_cov','promoter'],
+  listing:['listing_date','age_yrs','issue_price','list_close','list_pop','price','ret_issue',
+           'ret_listclose','cagr_issue','ath','off_ath','bench_ret','alpha'],
+  all:M.map(m=>m.k),
+};
+const READY=[
+ {n:'Quality compounders',f:[['roce','gte',18],['de','lte',0.6],['cfo_pat','gte',0.7],['sales_g3','gte',15]]},
+ {n:'Cheap & profitable',f:[['pe','lte',15],['pe','gte',0],['pat','gte',3],['roe','gte',15]]},
+ {n:'High margin SMEs',f:[['opm','gte',20],['ebitda_pct','gte',20],['pat','gte',2]]},
+ {n:'Debt-free',f:[['de','lte',0.1],['pat','gte',1]]},
+ {n:'Cash-backed profits',f:[['cfo_pat','gte',0.9],['fcf_pat','gte',0.4],['pat','gte',2]]},
+ {n:'Turnaround / momentum',f:[['pat_g1','gte',50],['ret_1y','gte',20]]},
+ {n:'Small & growing',f:[['mcap','lte',300],['sales_g1','gte',25],['pat_pct','gte',5]]},
+ {n:'Promoter-heavy',f:[['promoter','gte',60],['roe','gte',12]]},
+ {n:'IPO winners (beat benchmark)',f:[['alpha','gte',25],['ret_listclose','gte',30]]},
+ {n:'Below IPO price',f:[['ret_issue','lte',0]]},
+ {n:'Recent listings (2yr)',f:[['age_yrs','lte',2],['age_yrs','gte',0]]},
+ {n:'Seasoned & compounding',f:[['age_yrs','gte',3],['cagr_issue','gte',20],['roce','gte',15]]},
+ {n:'Far off all-time high',f:[['off_ath','lte',-40],['pat','gte',2]]},
+];
+
+/* ---------------- formatting ---------------- */
+function fmt(v,m){
+  if(v==null) return '<span class="na">—</span>';
+  if(m&&m.type==='date'){
+    const dt=new Date(v+'T00:00:00');
+    return isNaN(dt)?esc(v):dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+  }
+  const d=(m&&m.dec!=null)?m.dec:1;
+  let s=Math.abs(v)>=10000?Math.round(v).toLocaleString('en-IN')
+        :v.toLocaleString('en-IN',{minimumFractionDigits:d,maximumFractionDigits:d});
+  if(m&&(m.unit==='%')) s+='%';
+  if(m&&m.unit==='x') s+='x';
+  return s;
+}
+function cls(v,m){
+  if(v==null||!m||m.type==='date') return '';
+  if(m.unit==='%'&&/Return|Gr |CAGR|Off |Gain|Alpha|Live/.test(m.label)) return v>=0?'pos':'neg';
+  if(['pat','op','ebit','ebitda','fcf','eps'].includes(m.k)) return v<0?'neg':'';
+  return '';
+}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+const $=id=>document.getElementById(id);
+
+/* ---------------- filtering ---------------- */
+const OPS={gte:'≥',lte:'≤',gt:'>',lt:'<',eq:'=',bt:'between',nn:'has value'};
+const DOPS={gte:'on/after',lte:'on/before',bt:'between',nn:'has value'};
+const QLABEL={exchange:'Exchange filing',thirdparty:'Third-party',"price-only":'Price only'};
+
+function passes(c){
+  if(state.ex!=='all'&&c.exchange!==state.ex) return false;
+  if(state.sectors.size&&!state.sectors.has(c.sector||'Unknown')) return false;
+  if(state.quals.size&&!state.quals.has(c.quality||'price-only')) return false;
+  if(state.q){
+    const q=state.q;
+    if(!((c.name||'').toLowerCase().includes(q)||(c.symbol||'').toLowerCase().includes(q)
+        ||(c.sector||'').toLowerCase().includes(q))) return false;
+  }
+  for(const f of state.filters){
+    if(!f.k) continue;
+    const m=MBY[f.k]; if(!m) continue;
+    const v=g(c,f.k);
+    if(f.op==='nn'){ if(v==null) return false; continue; }
+    const isDate=m.type==='date';
+    const a=(f.v===''||f.v==null)?null:(isDate?String(f.v).slice(0,10):+f.v);
+    const b=(f.v2===''||f.v2==null)?null:(isDate?String(f.v2).slice(0,10):+f.v2);
+    if(a==null&&b==null) continue;                  // blank criterion is ignored
+    if(v==null) return false;                       // criterion set but no data -> exclude
+    if(f.op==='gte'&&!(v>=a)) return false;
+    if(f.op==='lte'&&!(v<=a)) return false;
+    if(f.op==='gt' &&!(v> a)) return false;
+    if(f.op==='lt' &&!(v< a)) return false;
+    if(f.op==='eq' &&!(isDate?v===a:Math.abs(v-a)<1e-9)) return false;
+    if(f.op==='bt'){ if(a!=null&&!(v>=a)) return false; if(b!=null&&!(v<=b)) return false; }
+  }
+  return true;
+}
+function rows(){
+  const out=DATA.companies.filter(passes);
+  const k=state.sort.k,dir=state.sort.dir;
+  out.sort((x,y)=>{
+    if(k==='name') return dir*(x.name||'').localeCompare(y.name||'');
+    if(k==='sector') return dir*((x.sector||'').localeCompare(y.sector||''));
+    if(k==='quality') return dir*String(x.quality||'').localeCompare(String(y.quality||''));
+    const a=g(x,k),b=g(y,k);
+    if(a==null&&b==null) return 0;
+    if(a==null) return 1;            // nulls always last
+    if(b==null) return -1;
+    if(typeof a==='string'||typeof b==='string') return dir*String(a).localeCompare(String(b));
+    return dir*(a-b);
+  });
+  return out;
+}
+
+/* ---------------- render: table ---------------- */
+function renderTable(){
+  const list=rows();
+  $('nShown').textContent=list.length.toLocaleString('en-IN');
+  $('nTotal').textContent=DATA.companies.length.toLocaleString('en-IN');
+  if(!DATA.companies.length){ $('tblwrap').innerHTML='<div class="empty">No data loaded yet.</div>'; return; }
+  if(!list.length){
+    $('tblwrap').innerHTML='<div class="empty"><b>No company matches all your criteria.</b><br>'
+      +'<span class="small">Loosen a filter, or note that companies missing that data point are excluded.</span></div>';
+    return;
+  }
+  const cols=state.cols.map(k=>MBY[k]).filter(Boolean);
+  const sk=state.sort.k, arrow=state.sort.dir<0?' ▼':' ▲';
+  let h='<table class="sc"><thead><tr>'
+    +`<th class="cn${sk==='name'?' sorted':''}" data-s="name">Company${sk==='name'?arrow:''}</th>`
+    +`<th${sk==='sector'?' class="sorted"':''} data-s="sector">Sector${sk==='sector'?arrow:''}</th>`;
+  cols.forEach(m=>{
+    h+=`<th class="r${sk===m.k?' sorted':''}" data-s="${m.k}" title="${esc(m.label)}${m.unit?' ('+m.unit+')':''}">`
+      +`${esc(m.label)}${m.unit&&m.unit!=='%'&&m.unit!=='x'?' <span style="opacity:.55">'+m.unit+'</span>':''}`
+      +`${sk===m.k?arrow:''}</th>`;
+  });
+  h+='</tr></thead><tbody>';
+  list.forEach((c,i)=>{
+    const q=c.quality||'price-only';
+    h+=`<tr data-i="${DATA.companies.indexOf(c)}"><td class="cn"><span class="nm">${esc(c.name)}</span>`
+      +(c.name_pending?'<span class="pend" title="Registered name not sourced yet — populates on the next data build">name pending</span>':'')
+      +`<span class="exb ${c.exchange==='BSE-SME'?'b':'n'}">${c.exchange==='BSE-SME'?'BSE':'NSE'}</span>`
+      +`<span class="qb q-${q}" title="${esc(QLABEL[q]||q)}">${q==='exchange'?'✓':q==='thirdparty'?'≈':'·'}</span>`
+      +(c.disputed?`<span class="qb q-disputed" title="Sources disagree on ${esc(Object.keys(c.disputed).join(', '))} — open the company to see both figures">!</span>`:'')
+      +`<br><span class="tick">${esc(c.symbol||'')}${c.fin_asof?' · data '+esc(c.fin_asof):''}</span></td>`
+      +`<td>${esc(c.sector||'Unknown')}</td>`;
+    cols.forEach(m=>{
+      let v=g(c,m.k), live=false;
+      if(m.k==='price'&&LIVE[c.symbol]!=null){ v=LIVE[c.symbol]; live=true; }
+      h+=`<td class="r ${cls(v,m)}">${fmt(v,m)}${live?'<span class="livedot" title="live, indicative"></span>':''}</td>`;
+    });
+    h+='</tr>';
+  });
+  h+='</tbody></table>';
+  $('tblwrap').innerHTML=h;
+  $('tblwrap').querySelectorAll('th[data-s]').forEach(th=>th.onclick=()=>{
+    const k=th.dataset.s;
+    if(state.sort.k===k) state.sort.dir*=-1;
+    else state.sort={k,dir:(k==='name'||k==='sector')?1:(MBY[k]&&MBY[k].hi?-1:-1)};
+    renderTable();
+  });
+  $('tblwrap').querySelectorAll('tbody tr').forEach(tr=>tr.onclick=()=>openDetail(+tr.dataset.i));
+}
+
+/* ---------------- render: filters ---------------- */
+function renderFilters(){
+  const opts=GROUPS.map(gr=>'<optgroup label="'+esc(gr)+'">'
+    +M.filter(m=>m.grp===gr).map(m=>`<option value="${m.k}">${esc(m.label)}${m.unit?' ('+m.unit+')':''}</option>`).join('')
+    +'</optgroup>').join('');
+  $('fRows').innerHTML=state.filters.map((f,i)=>{
+    const m=MBY[f.k], isDate=m&&m.type==='date';
+    const ops=isDate?DOPS:OPS;
+    if(isDate&&!(f.op in DOPS)) f.op='gte';
+    const it=isDate?'date':'number', step=isDate?'':' step="any"';
+    return `<div class="frow" data-i="${i}">
+      <select class="fk">${opts.replace('value="'+f.k+'"','value="'+f.k+'" selected')}</select>
+      <select class="fo">${Object.keys(ops).map(o=>`<option value="${o}"${f.op===o?' selected':''}>${ops[o]}</option>`).join('')}</select>
+      <input class="fv" type="${it}"${step} placeholder="value" value="${f.v??''}" ${f.op==='nn'?'disabled':''}>
+      ${f.op==='bt'?`<input class="fv2" type="${it}"${step} placeholder="and" value="${f.v2??''}">`
+        :`<span class="funit">${m?esc(m.unit||(isDate?'date':'')):''}</span>`}
+      <button class="del">✕</button></div>`;
+  }).join('');
+  $('fRows').querySelectorAll('.frow').forEach(row=>{
+    const i=+row.dataset.i;
+    row.querySelector('.fk').onchange=e=>{state.filters[i].k=e.target.value;renderFilters();apply();};
+    row.querySelector('.fo').onchange=e=>{state.filters[i].op=e.target.value;renderFilters();apply();};
+    const fv=row.querySelector('.fv');
+    if(fv) fv.oninput=e=>{state.filters[i].v=e.target.value;apply();};
+    const fv2=row.querySelector('.fv2');
+    if(fv2) fv2.oninput=e=>{state.filters[i].v2=e.target.value;apply();};
+    row.querySelector('.del').onclick=()=>{state.filters.splice(i,1);renderFilters();apply();};
+  });
+  const n=state.filters.filter(f=>f.k&&(f.op==='nn'||f.v!==''&&f.v!=null||f.v2!=='' &&f.v2!=null)).length
+    +state.sectors.size+state.quals.size;
+  $('fCount').style.display=n?'inline-block':'none';
+  $('fCount').textContent=n;
+  $('fBtn').classList.toggle('on',n>0);
+}
+function renderQuals(){
+  const order=['exchange','thirdparty','price-only'];
+  $('qChips').innerHTML=order.map(q=>{
+    const n=DATA.companies.filter(c=>(c.quality||'price-only')===q).length;
+    return `<button class="chip q${state.quals.has(q)?' on':''}" data-q="${q}">${esc(QLABEL[q])} <span style="opacity:.6">${n}</span></button>`;
+  }).join('');
+  $('qChips').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{
+    const q=b.dataset.q;
+    state.quals.has(q)?state.quals.delete(q):state.quals.add(q);
+    renderQuals();apply();
+  });
+}
+function renderSectors(){
+  const secs=[...new Set(DATA.companies.map(c=>c.sector||'Unknown'))].sort();
+  $('secChips').innerHTML=secs.map(s=>{
+    const n=DATA.companies.filter(c=>(c.sector||'Unknown')===s).length;
+    return `<button class="chip${state.sectors.has(s)?' on':''}" data-s="${esc(s)}">${esc(s)} <span style="opacity:.6">${n}</span></button>`;
+  }).join('')||'<span class="small">—</span>';
+  $('secChips').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{
+    const s=b.dataset.s;
+    state.sectors.has(s)?state.sectors.delete(s):state.sectors.add(s);
+    renderSectors();apply();
+  });
+}
+function renderCols(){
+  $('colList').innerHTML=GROUPS.map(gr=>
+    `<div style="grid-column:1/-1;font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:#9aa3af;margin-top:6px">${esc(gr)}</div>`
+    +M.filter(m=>m.grp===gr).map(m=>
+      `<label><input type="checkbox" value="${m.k}"${state.cols.includes(m.k)?' checked':''}>${esc(m.label)}</label>`).join('')
+  ).join('');
+  $('colList').querySelectorAll('input').forEach(cb=>cb.onchange=()=>{
+    const k=cb.value;
+    if(cb.checked){ if(!state.cols.includes(k)) state.cols.push(k); }
+    else state.cols=state.cols.filter(x=>x!==k);
+    save();renderTable();
+  });
+}
+
+/* ---------------- saved screens ---------------- */
+function myScreens(){try{return JSON.parse(localStorage.getItem('sme_screens')||'[]')}catch(e){return[]}}
+function renderScreens(){
+  const mine=myScreens();
+  $('sList').innerHTML=mine.length?mine.map((s,i)=>
+    `<button class="chip" data-i="${i}">${esc(s.n)}<span data-del="${i}" style="margin-left:7px;color:#b91c1c;font-weight:900">✕</span></button>`).join('')
+    :'<span class="small">No saved screens yet — set your filters and save them here.</span>';
+  $('sList').querySelectorAll('.chip').forEach(b=>b.onclick=e=>{
+    if(e.target.dataset.del!=null){
+      const arr=myScreens();arr.splice(+e.target.dataset.del,1);
+      localStorage.setItem('sme_screens',JSON.stringify(arr));renderScreens();return;
+    }
+    loadScreen(myScreens()[+b.dataset.i]);
+  });
+  $('pList').innerHTML=READY.map((s,i)=>`<button class="chip ex" data-p="${i}">${esc(s.n)}</button>`).join('');
+  $('pList').querySelectorAll('.chip').forEach(b=>b.onclick=()=>
+    loadScreen({n:READY[+b.dataset.p].n,f:READY[+b.dataset.p].f.map(x=>({k:x[0],op:x[1],v:x[2],v2:''}))}));
+}
+function loadScreen(s){
+  if(!s) return;
+  state.filters=(s.f||[]).map(f=>Array.isArray(f)?{k:f[0],op:f[1],v:f[2],v2:''}:{...f});
+  if(s.sec) state.sectors=new Set(s.sec);
+  if(s.cols) state.cols=s.cols.slice();
+  renderFilters();renderSectors();renderCols();apply();
+  $('fPanel').classList.add('show');$('sPanel').classList.remove('show');
+}
+
+/* where each number came from — shown per company so nothing is taken on trust */
+const SRCLABEL={revenue:'Revenue',pat:'PAT',op_income:'Operating Profit',ebitda:'EBITDA',
+  dep:'Depreciation',interest:'Interest',tax:'Tax',eps:'EPS',cfo:'CFO',capex:'Capex',
+  equity:'Equity',debt:'Debt',shares:'Shares',price:'Price',hi52:'52w High',lo52:'52w Low',
+  issue_price:'IPO Issue Price',listing_date:'Listing Date',list_close:'Listing Day Close',
+  ath:'All-Time High',bench_ret:'Benchmark'};
+function dispHTML(c){
+  if(!c.disputed) return '';
+  const rows=Object.keys(c.disputed).map(k=>{
+    const d=c.disputed[k];
+    const vals=Object.keys(d.values||{}).map(s=>
+      `<div class="srcrow"><span>${esc(s)}</span><span>${fmt(d.values[s],MBY[k]||{dec:2})}</span></div>`).join('');
+    return `<div style="margin-bottom:8px"><b style="font-size:.76rem">${esc(SRCLABEL[k]||k)}</b>`
+      +`<span class="small"> — sources differ by ${d.spread_pct}%</span>${vals}</div>`;
+  }).join('');
+  return `<div class="sect" style="border:1px solid #fde68a;background:#fffbeb">
+    <h3 style="color:#92400e">⚠ Sources disagree on this company</h3>${rows}
+    <div class="small">The screener uses the highest-priority source (exchange filing where one exists).
+    Both figures are shown so you can check the filing yourself before acting on this company.</div></div>`;
+}
+function srcHTML(c){
+  const src=c.src||{};
+  const keys=Object.keys(SRCLABEL).filter(k=>src[k]);
+  if(!keys.length) return '';
+  return `<div class="sect"><h3>Where each number came from</h3>`
+    +keys.map(k=>`<div class="srcrow"><span>${esc(SRCLABEL[k])}</span><span>${esc(src[k])}</span></div>`).join('')
+    +`<div class="small" style="margin-top:8px">Exchange filings are the companies' own submissions to BSE/NSE. `
+    +`Third-party sources are used only where no filing could be read, and are labelled as such.</div></div>`;
+}
+
+/* ---------------- detail view ---------------- */
+function openDetail(i){
+  const c=DATA.companies[i]; if(!c) return;
+  const secH=GROUPS.map(gr=>{
+    const items=M.filter(m=>m.grp===gr);
+    return `<div class="sect"><h3>${esc(gr)}</h3><div class="facts">`
+      +items.map(m=>{const v=g(c,m.k);
+        return `<div class="fact"><div class="k">${esc(m.label)}${m.unit?' ('+esc(m.unit)+')':''}</div>`
+          +`<div class="v ${cls(v,m)}">${fmt(v,m)}</div></div>`;}).join('')
+      +'</div></div>';
+  }).join('');
+  const nseL=`https://www.nseindia.com/get-quotes/equity?symbol=${encodeURIComponent(c.symbol||'')}`;
+  const bseL=c.bse_code?`https://www.bseindia.com/stock-share-price/x/x/${c.bse_code}/`:null;
+  const scrL=`https://www.screener.in/company/${encodeURIComponent(c.symbol||'')}/`;
+  $('dp').innerHTML=`
+    <div class="dhead">
+      <div><h2>${esc(c.name)}</h2>
+        <div class="small">${esc(c.symbol||'')} · ${esc(c.exchange||'')} · ${esc(c.sector||'Unknown')}${c.industry?' · '+esc(c.industry):''}
+        ${c.isin?'<br>ISIN '+esc(c.isin):''}</div></div>
+      <button class="xbtn" onclick="closeDetail()">✕</button>
+    </div>
+    <div class="small" style="margin-bottom:10px">Financials as of <b>${esc(c.fin_asof||'not available')}</b>${c.fetched?' · data pulled '+esc(c.fetched):''}
+      ${c.listing_date?' · listed '+esc(c.listing_date):''}. Figures as sourced; ₹ Cr unless noted.
+      <span class="qb q-${esc(c.quality||'price-only')}">${(c.quality==='exchange')?'✓':(c.quality==='thirdparty')?'≈':'·'}</span>
+      ${esc(QLABEL[c.quality||'price-only'])}</div>
+    ${c.summary?`<div class="sect"><h3>About</h3><div class="small" style="color:var(--ink2)">${esc(c.summary)}</div></div>`:''}
+    ${secH}
+    ${dispHTML(c)}
+    ${srcHTML(c)}
+    <div class="sect"><h3>Verify at source</h3><div class="lk">
+      <a href="${nseL}" target="_blank" rel="noopener">NSE quote</a>
+      ${bseL?`<a href="${bseL}" target="_blank" rel="noopener">BSE quote</a>`:''}
+      <a href="${scrL}" target="_blank" rel="noopener">Screener.in</a>
+      ${c.website?`<a href="${esc(c.website)}" target="_blank" rel="noopener">Company site</a>`:''}
+    </div>
+    <div class="small" style="margin-top:8px">Always confirm against the company's own filing before you act on any number here.</div></div>`;
+  $('dov').classList.add('show'); document.body.style.overflow='hidden';
+}
+function closeDetail(){$('dov').classList.remove('show');document.body.style.overflow='';}
+
+/* ---------------- CSV export ---------------- */
+function exportCSV(){
+  const list=rows(), cols=state.cols.map(k=>MBY[k]).filter(Boolean);
+  const head=['Company','Symbol','Exchange','Sector','Listing date','Financials as of','Data source']
+    .concat(cols.map(m=>m.label+(m.unit?' ('+m.unit+')':'')));
+  const body=list.map(c=>[c.name,c.symbol,c.exchange,c.sector||'Unknown',c.listing_date||'',
+      c.fin_asof||'',QLABEL[c.quality||'price-only']]
+    .concat(cols.map(m=>{const v=g(c,m.k);return v==null?'':v;})));
+  const csv=[head].concat(body).map(r=>r.map(x=>`"${String(x).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent('﻿'+csv);
+  a.download=`FinDeependence-SME-Screen-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+/* ---------------- persistence ---------------- */
+function save(){
+  try{localStorage.setItem('sme_view',JSON.stringify({
+    cols:state.cols,sort:state.sort,ex:state.ex,
+    filters:state.filters,sectors:[...state.sectors],quals:[...state.quals]}));}catch(e){}
+}
+function restore(){
+  try{
+    const v=JSON.parse(localStorage.getItem('sme_view')||'null'); if(!v) return;
+    if(Array.isArray(v.cols)&&v.cols.length) state.cols=v.cols.filter(k=>MBY[k]);
+    if(v.sort&&v.sort.k) state.sort=v.sort;
+    if(v.ex) state.ex=v.ex;
+    if(Array.isArray(v.filters)) state.filters=v.filters;
+    if(Array.isArray(v.sectors)) state.sectors=new Set(v.sectors);
+    if(Array.isArray(v.quals)) state.quals=new Set(v.quals);
+  }catch(e){}
+}
+function apply(){save();renderTable();renderFilters();}
+
+/* ---------------- data load ---------------- */
+async function load(){
+  $('tblwrap').innerHTML='<div class="spin"></div>';
+  const bust='?t='+Date.now();
+  let ok=false;
+  try{
+    const r=await fetch('data/sme_data.json'+bust,{cache:'no-store'});
+    if(r.ok){ DATA=await r.json(); ok=true; }
+  }catch(e){}
+  if(!ok){ // file:// or fetch blocked -> try the JS payload
+    ok=await new Promise(res=>{
+      const s=document.createElement('script');
+      s.src='data/sme_data.js'+bust;
+      s.onload=()=>{ if(window.SME_DATA){DATA=window.SME_DATA;res(true);} else res(false); };
+      s.onerror=()=>res(false);
+      document.head.appendChild(s);
+    });
+  }
+  if(!ok){
+    $('databox').innerHTML='<div class="errbox"><b>Could not load the dataset.</b> '
+      +'Make sure <code>data/sme_data.json</code> sits next to this page. If you opened the file directly '
+      +'from your disk, some browsers block local file reads — host it (GitHub Pages / Netlify) or use the '
+      +'<code>data/sme_data.js</code> fallback.</div>';
+    $('tblwrap').innerHTML='<div class="empty">No data.</div>';
+    return;
+  }
+  DATA.companies=(DATA.companies||[]).map(c=>{c.m=c.m||{};return c;});
+  $('dstamp').textContent='Data: '+(DATA.generated||'unknown');
+  $('databox').innerHTML = DATA.sample
+    ? '<div class="errbox"><b>⚠ Demo data — not real companies.</b> Run '
+      +'<code>python pipeline/make_starter_data.py</code> or the GitHub Action to replace it.</div>'
+    : DATA.starter
+      ? '<div class="warnbox"><b>Starter data — the full build hasn\'t run yet.</b> '
+        +`These ${DATA.universe} companies are real and so is every figure shown `
+        +`(${DATA.with_price||0} live NSE prices, ${DATA.with_issue_price||0} IPO issue prices &amp; listing dates), `
+        +'but this is a partial universe and the fundamentals are deliberately blank rather than estimated.<br>'
+        +'<b>To load all ~1,100 SME companies with sectors and every parameter:</b> double-click '
+        +'<code>1-CHECK-SOURCES.bat</code>, then <code>2-UPDATE-ALL-DATA.bat</code> in this folder '
+        +'(1–3 hours, one time). After that the GitHub Action keeps it current automatically.</div>'
+      : (DATA.with_financials!=null&&DATA.universe
+          ? `<div class="small" style="margin:0 0 8px">${DATA.with_financials} of ${DATA.universe} SME companies have filed financials in the dataset. Rest show price data only until their next filing is picked up.</div>`
+          : '');
+  renderQuals();renderSectors();renderCols();renderFilters();renderScreens();renderTable();
+  setLiveStamp();
+  if(!load._timers){
+    load._timers=true;
+    setInterval(checkForNewData,DATA_POLL_MS);
+    setInterval(refreshLive,LIVE_MS);
+    document.addEventListener('visibilitychange',()=>{ if(!document.hidden){checkForNewData();refreshLive();} });
+    refreshLive();
+  }
+}
+
+/* ---------------- auto-refresh: data file ---------------- */
+async function checkForNewData(){
+  try{
+    const r=await fetch('data/sme_data.json?t='+Date.now(),{cache:'no-store'});
+    if(!r.ok) return;
+    const j=await r.json();
+    if(j && j.generated && j.generated!==DATA.generated){
+      DATA=j; DATA.companies=(DATA.companies||[]).map(c=>{c.m=c.m||{};return c;});
+      $('dstamp').textContent='Data: '+DATA.generated;
+      renderQuals();renderSectors();renderTable();
+      flash('Updated with the latest data');
+    }
+  }catch(e){}
+}
+function flash(msg){
+  const el=$('livestamp'); if(!el) return;
+  const old=el.textContent; el.textContent=msg;
+  setTimeout(()=>{el.textContent=old;},4000);
+}
+
+/* ---------------- auto-refresh: live quotes ---------------- */
+async function fetchOne(url,ms){
+  for(const p of PROXIES){
+    try{
+      const c=new AbortController(); const t=setTimeout(()=>c.abort(),ms||9000);
+      const r=await fetch(p(url),{cache:'no-store',signal:c.signal});
+      clearTimeout(t);
+      if(r.ok){ const txt=await r.text(); try{ return JSON.parse(txt); }catch(e){} }
+    }catch(e){}
+  }
+  return null;
+}
+let liveBusy=false;
+async function refreshLive(){
+  if(liveBusy) return;
+  if(!marketOpen()){ setLiveStamp(); return; }
+  liveBusy=true;
+  try{
+    const visible=rows().slice(0,LIVE_CAP).filter(c=>c.exchange==='NSE-EMERGE'&&c.symbol);
+    let got=0;
+    for(const c of visible){
+      const j=await fetchOne('https://www.nseindia.com/api/quote-equity?symbol='+encodeURIComponent(c.symbol),7000);
+      const p=j&&j.priceInfo&&Number(j.priceInfo.lastPrice);
+      if(p&&isFinite(p)&&p>0){ LIVE[c.symbol]=p; got++; }
+      await new Promise(r=>setTimeout(r,120));
+    }
+    if(got){ renderTable(); }
+    setLiveStamp(got);
+  }finally{ liveBusy=false; }
+}
+function setLiveStamp(got){
+  const el=$('livestamp'); if(!el) return;
+  if(!marketOpen()){
+    el.innerHTML='<span class="dot off"></span>Market closed · showing official closing prices';
+    return;
+  }
+  const n=Object.keys(LIVE).length;
+  el.innerHTML='<span class="dot on"></span>Live '+(n?n+' quotes':'…')+
+    ' · indicative, refreshes every 2 min';
+}
+
+/* ---------------- events ---------------- */
+$('q').oninput=e=>{state.q=e.target.value.trim().toLowerCase();renderTable();};
+$('exseg').querySelectorAll('button').forEach(b=>b.onclick=()=>{
+  $('exseg').querySelectorAll('button').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active'); state.ex=b.dataset.ex; apply();
+});
+function tog(btn,panel){$(btn).onclick=()=>{
+  const p=$(panel), was=p.classList.contains('show');
+  ['fPanel','sPanel','cPanel'].forEach(x=>$(x).classList.remove('show'));
+  if(!was) p.classList.add('show');
+  ['fBtn','sBtn','cBtn'].forEach(x=>$(x).classList.toggle('on',
+    x===btn&&!was ? true : (x==='fBtn'? (state.filters.length>0||state.sectors.size>0):false)));
+};}
+tog('fBtn','fPanel');tog('sBtn','sPanel');tog('cBtn','cPanel');
+$('addF').onclick=()=>{state.filters.push({k:'roce',op:'gte',v:'',v2:''});renderFilters();};
+$('clrF').onclick=()=>{state.filters=[];state.sectors=new Set();state.quals=new Set();
+  renderQuals();renderSectors();renderFilters();apply();};
+$('xBtn').onclick=exportCSV;
+$('reloadBtn').onclick=load;
+$('sSave').onclick=()=>{
+  const n=$('sName').value.trim()||('Screen '+(myScreens().length+1));
+  const arr=myScreens();
+  arr.push({n,f:state.filters,sec:[...state.sectors],cols:state.cols});
+  localStorage.setItem('sme_screens',JSON.stringify(arr));
+  $('sName').value='';renderScreens();
+};
+$('cPanel').querySelectorAll('[data-preset]').forEach(b=>b.onclick=()=>{
+  state.cols=PRESETS[b.dataset.preset].slice();renderCols();save();renderTable();
+});
+$('dov').onclick=e=>{if(e.target.id==='dov')closeDetail();};
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDetail();});
+
+/* ================= LICENSE (same codes as the IPO Tracker) ================= */
+const FD_SECRET='FD!FreedomWithFinance#DeepDalal$2026';
+function fdHash(s){let h=5381;for(let i=0;i<s.length;i++){h=(((h<<5)+h)^s.charCodeAt(i))>>>0;}return ('0000'+h.toString(36).toUpperCase()).slice(-4);}
+function checkCode(code){
+  const m=String(code||'').trim().toUpperCase().replace(/\s/g,'').match(/^FD-?(\d{6}[A-Z0-9]{2})-?([A-Z0-9]{4})$/);
+  if(!m)return null;
+  if(fdHash(m[1]+FD_SECRET)!==m[2])return null;
+  const y=2000+ +m[1].slice(0,2),mo=+m[1].slice(2,4),d=+m[1].slice(4,6);
+  const exp=new Date(y,mo-1,d,23,59,59);
+  return exp>=new Date()?exp:false;
+}
+const WORKER_URL='https://fd-license.deepuploads27.workers.dev';
+const GRACE_MS=72*3600*1000;
+function deviceId(){
+  let d=null;try{d=localStorage.getItem('fd_dev')}catch(e){}
+  if(!d){d=(crypto.randomUUID?crypto.randomUUID():Date.now()+'-'+Math.random().toString(36).slice(2));
+    try{localStorage.setItem('fd_dev',d)}catch(e){}}
+  return d;
+}
+async function postVerify(code){
+  const c=new AbortController();const t=setTimeout(()=>c.abort(),10000);
+  try{
+    const r=await fetch(WORKER_URL+'/verify',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({code,device:deviceId()}),signal:c.signal});
+    return await r.json();
+  }finally{clearTimeout(t);}
+}
+function licStatus(){try{return checkCode(localStorage.getItem('fd_lic'))}catch(e){return null}}
+let APP_STARTED=false;
+function startApp(){ if(APP_STARTED) return; APP_STARTED=true; restore();
+  $('exseg').querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.ex===state.ex));
+  load(); }
+function showUnlocked(st){
+  $('pwov').classList.remove('show');document.body.style.overflow='';
+  const days=Math.ceil((st-new Date())/864e5);
+  const el=$('lic-stamp');
+  el.textContent=days<=10?`⚠ Renew in ${days}d`:`✓ Member till ${st.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'2-digit'})}`;
+  if(days<=10) el.style.color='#fcd34d';
+  startApp();
+}
+function showLocked(msg){
+  $('pwov').classList.add('show');document.body.style.overflow='hidden';
+  if(msg){const el=$('pw-msg');el.className='pwmsg err';el.textContent=msg;}
+}
+async function applyLicense(){
+  const st=licStatus();
+  if(!(st instanceof Date)){
+    showLocked(st===false?'Your subscription has expired — DM or email me to renew.':'');
+    return;
+  }
+  if(!WORKER_URL){showUnlocked(st);return;}
+  const last=+localStorage.getItem('fd_lic_ok')||0;
+  showUnlocked(st);
+  if(Date.now()-last<12*3600*1000)return;
+  try{
+    const r=await postVerify(localStorage.getItem('fd_lic'));
+    if(r.ok){localStorage.setItem('fd_lic_ok',Date.now());}
+    else{
+      localStorage.removeItem('fd_lic');localStorage.removeItem('fd_lic_ok');
+      showLocked(r.reason==='device'?'This code is already active on another device. One subscription = one device. Message me if you changed your phone.'
+        :r.reason==='expired'?'Your subscription has expired — message me to renew.'
+        :'This code is no longer valid — message me for help.');
+    }
+  }catch(e){
+    if(Date.now()-last>GRACE_MS && last!==0){showLocked('Could not verify your subscription — please go online once to continue.');}
+  }
+}
+async function tryUnlock(){
+  const v=$('pw-code').value.trim().toUpperCase();
+  const el=$('pw-msg');
+  const st=checkCode(v);
+  if(st===false){el.className='pwmsg err';el.textContent='This code has expired — message me to renew.';return;}
+  if(st===null){el.className='pwmsg err';el.textContent='Invalid code. Check for typos, or message me to get your code.';return;}
+  if(WORKER_URL){
+    el.className='pwmsg';el.textContent='Verifying…';
+    try{
+      const r=await postVerify(v);
+      if(!r.ok){
+        el.className='pwmsg err';
+        el.textContent=r.reason==='device'?'This code is already registered to another device. One subscription = one device — message me if you changed your phone.'
+          :r.reason==='expired'?'This code has expired — message me to renew.':'Invalid code — message me for help.';
+        return;
+      }
+      localStorage.setItem('fd_lic_ok',Date.now());
+    }catch(e){el.className='pwmsg err';el.textContent='Could not reach the verification server — check your internet and try again.';return;}
+  }
+  try{localStorage.setItem('fd_lic',v)}catch(e){}
+  el.className='pwmsg ok';el.textContent='Welcome! Access active till '+st.toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
+  setTimeout(applyLicense,900);
+}
+$('pw-go').onclick=tryUnlock;
+$('pw-code').addEventListener('keydown',e=>{if(e.key==='Enter')tryUnlock();});
+applyLicense();
+</script>
+</body>
+</html>
