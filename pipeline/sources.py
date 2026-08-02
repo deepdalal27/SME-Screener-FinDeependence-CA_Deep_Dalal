@@ -970,9 +970,15 @@ def quality_of(sources):
 # 7. doctor — verify every endpoint from THIS machine
 # --------------------------------------------------------------------------
 
-def probe_all(sample_nse="KAY", sample_bse="543233", verbose=True):
+def probe_all(sample_nse=None, sample_bse=None, verbose=True):
     """Probes each source and returns a report. Run this on the machine that
-       will host the pipeline — endpoint access differs by IP/region."""
+       will host the pipeline — endpoint access differs by IP/region.
+
+       The per-company endpoints are tested with REAL identifiers taken from
+       the universe lists fetched moments earlier. Testing them with a guessed
+       ticker produces "0 records" for a perfectly healthy endpoint, which
+       looks identical to a block — a false alarm that would send us rewriting
+       working code."""
     report = []
 
     def probe(name, fn):
@@ -992,13 +998,67 @@ def probe_all(sample_nse="KAY", sample_bse="543233", verbose=True):
 
     if verbose:
         print("Probing data sources from this machine…")
-    probe("BSE universe (SME scrips)", lambda: bse_universe())
-    probe("BSE results API", lambda: bse_financials(sample_bse)[0])
-    probe("BSE listing header", lambda: bse_listing_info(sample_bse))
+
+    # --- universes first, so the per-company probes can use real tickers ---
+    bse_list, nse_list = [], []
+
+    def _bse_uni():
+        bse_list.extend(bse_universe())
+        return bse_list
+    probe("BSE universe (SME scrips)", _bse_uni)
+
     s = nse_session()
-    probe("NSE universe (Emerge CSV)", lambda: nse_universe(s))
-    probe("NSE quote API", lambda: nse_quote(sample_nse, s))
-    probe("NSE results API", lambda: nse_financials(sample_nse, s)[0])
+
+    def _nse_uni():
+        nse_list.extend(nse_universe(s))
+        return nse_list
+    probe("NSE universe (Emerge CSV)", _nse_uni)
+
+    # real identifiers, with the caller's overrides taking precedence
+    if not sample_bse:
+        for c in bse_list:
+            if c.get("bse_code"):
+                sample_bse = c["bse_code"]
+                break
+    if not sample_nse:
+        for c in nse_list:
+            if c.get("symbol"):
+                sample_nse = c["symbol"]
+                break
+    if verbose:
+        print(f"  (per-company endpoints tested with real tickers: "
+              f"NSE {sample_nse or 'n/a'}, BSE {sample_bse or 'n/a'})")
+
+    # try a handful of real companies before calling an endpoint dead — any
+    # single company may simply not have filed yet
+    bse_codes = [c["bse_code"] for c in bse_list if c.get("bse_code")][:5] or \
+                ([sample_bse] if sample_bse else [])
+    nse_syms = [c["symbol"] for c in nse_list if c.get("symbol")][:5] or \
+               ([sample_nse] if sample_nse else [])
+
+    def _try_many(fn, items):
+        hits, tried = 0, 0
+        for it in items:
+            tried += 1
+            try:
+                if fn(it):
+                    hits += 1
+            except Exception:
+                pass
+        return {"worked_for": f"{hits} of {tried} real companies"} if hits else {}
+
+    probe("BSE results API", lambda: _try_many(lambda c: bse_financials(c)[0], bse_codes))
+    probe("BSE listing header", lambda: _try_many(bse_listing_info, bse_codes))
+    probe("NSE quote API", lambda: _try_many(lambda x: nse_quote(x, s), nse_syms))
+    probe("NSE results API", lambda: _try_many(lambda x: nse_financials(x, s)[0], nse_syms))
+    probe("XBRL filing discovery",
+          lambda: _try_many(lambda x: xbrl_urls_for(symbol=x, session=s), nse_syms))
+    probe("XBRL parse (offline self-test)",
+          lambda: parse_xbrl('<xbrl xmlns="http://www.xbrl.org/2003/instance">'
+                             '<context id="C"><period><endDate>2026-03-31</endDate>'
+                             '</period></context>'
+                             '<ProfitLossForPeriod contextRef="C">1</ProfitLossForPeriod>'
+                             '</xbrl>')[0])
     probe("Moneycontrol pricefeed", lambda: mc_snapshot("Reliance Industries")[0])
     probe("Chittorgarh IPO feed", lambda: ipo_history(years_back=1))
     probe("Yahoo statements", lambda: yahoo_financials("RELIANCE.NS")[0])
