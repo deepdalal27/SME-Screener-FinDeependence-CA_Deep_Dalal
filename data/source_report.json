@@ -1,47 +1,47 @@
 {
- "checked": "2026-08-02T23:03:30.135038+05:30",
+ "checked": "2026-08-02T23:20:56.980241+05:30",
  "report": [
   {
    "source": "BSE universe (SME scrips)",
    "ok": true,
    "detail": "502 records",
-   "secs": 1.9
+   "secs": 1.8
   },
   {
    "source": "NSE universe (Emerge CSV)",
    "ok": true,
    "detail": "547 records",
-   "secs": 6.0
+   "secs": 34.7
   },
   {
    "source": "BSE results API",
    "ok": false,
    "detail": "0 records",
-   "secs": 6.1
+   "secs": 6.5
   },
   {
    "source": "BSE listing header",
    "ok": false,
    "detail": "0 records",
-   "secs": 5.2
+   "secs": 4.7
   },
   {
    "source": "NSE quote API",
    "ok": false,
    "detail": "0 records",
-   "secs": 8.5
+   "secs": 86.8
   },
   {
    "source": "NSE results API",
    "ok": false,
    "detail": "0 records",
-   "secs": 3.6
+   "secs": 3.9
   },
   {
    "source": "XBRL filing discovery",
    "ok": false,
    "detail": "0 records",
-   "secs": 0.5
+   "secs": 0.7
   },
   {
    "source": "XBRL parse (offline self-test)",
@@ -50,22 +50,46 @@
    "secs": 0.0
   },
   {
+   "source": "NSE via relay: worker",
+   "ok": false,
+   "detail": "0 records",
+   "secs": 0.0
+  },
+  {
+   "source": "NSE via relay: allorigins",
+   "ok": false,
+   "detail": "0 records",
+   "secs": 19.7
+  },
+  {
+   "source": "NSE via relay: codetabs",
+   "ok": false,
+   "detail": "0 records",
+   "secs": 0.1
+  },
+  {
+   "source": "NSE via relay: thingproxy",
+   "ok": false,
+   "detail": "0 records",
+   "secs": 0.0
+  },
+  {
    "source": "Moneycontrol pricefeed",
    "ok": true,
    "detail": "8 records",
-   "secs": 2.2
+   "secs": 1.9
   },
   {
    "source": "Chittorgarh IPO feed",
    "ok": true,
    "detail": "473 records",
-   "secs": 1.9
+   "secs": 0.5
   },
   {
    "source": "Yahoo statements",
    "ok": true,
    "detail": "21 records",
-   "secs": 2.0
+   "secs": 1.7
   },
   {
    "source": "Yahoo prices (batch)",
